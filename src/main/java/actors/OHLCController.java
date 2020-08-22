@@ -10,6 +10,7 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import entity.BarInput;
 import entity.BarOHLC;
 
 import java.io.BufferedReader;
@@ -20,9 +21,14 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 
-public class ReadDataWorker extends AbstractBehavior<ReadDataWorker.Command> {
+public class OHLCController extends AbstractBehavior<OHLCController.Command> {
+
+    private Object TIMER_KEY;
 
     public interface Command extends Serializable {}
 
@@ -39,23 +45,49 @@ public class ReadDataWorker extends AbstractBehavior<ReadDataWorker.Command> {
         }
     }
 
-    private ReadDataWorker(ActorContext<Command> context) {
+    public static class GenerateBarData implements Command{
+
+        public static final long serialVersionUID = 1L;
+        private String message;
+
+        public GenerateBarData() {
+
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    private OHLCController(ActorContext<Command> context) {
         super(context);
     }
 
     public static Behavior<Command> create(){
-        return Behaviors.setup(ReadDataWorker::new);
+        return Behaviors.setup(OHLCController::new);
     }
 
+    private Map<ActorRef<FSMWorker.Command>, Integer> currentFSM;
 
     @Override
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
                 .onMessage(InstructionCommand.class , command -> {
                     if (command.getMessage().equals("start")) {
+                        currentFSM = new HashMap<>();
                         ActorRef<FSMWorker.Command> fsmActor = getContext().spawn(FSMWorker.create(), "WORKER_FSM");
                         readTradeDataAndSendToFSM(fsmActor);
+                        currentFSM.put(fsmActor,0);
 
+                    }
+                    return Behaviors.withTimers(timer->{
+                            timer.startTimerWithFixedDelay(TIMER_KEY,new GenerateBarData(), Duration.ofSeconds(15));
+                        return this;
+                    });
+                })
+                .onMessage(GenerateBarData.class, message->{
+                    for (ActorRef<FSMWorker.Command> commandActorRef:currentFSM.keySet()) {
+                        commandActorRef.tell(new FSMWorker.Command(null,"getBarData", getContext().getSelf()));
                     }
                     return this;
                 })
@@ -75,9 +107,9 @@ public class ReadDataWorker extends AbstractBehavior<ReadDataWorker.Command> {
 
 
                 // convert JSON string to Map
-                BarOHLC barOHLC = mapper.readValue(line, BarOHLC.class);
+                BarInput barInput = mapper.readValue(line, BarInput.class);
 
-                fsmActor.tell(new FSMWorker.Command(barOHLC));
+                fsmActor.tell(new FSMWorker.Command(barInput, "",getContext().getSelf()));
 
 
                 line = reader.readLine();

@@ -1,94 +1,50 @@
 package entity;
 
+public class BarOHLC {
+    private TradeAggregate tradeAggregate;
+    private String event;
+    private String symbol;
+    private String bar_num;
 
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.sql.Timestamp;
-
-public class BarOHLC  {
-    private String sym;
-    @JsonProperty("T")
-    private String trade;
-    @JsonProperty("P")
-    private double product;
-    @JsonProperty("Q")
-    private double quantity;
-    @JsonProperty("TS")
-    private double timestamp;
-
-    private String side;
-    @JsonProperty("TS2")
-    private Timestamp timestamp2;
-
-
-    public String getSym() {
-        return sym;
+    public TradeAggregate getTradeAggregate() {
+        return tradeAggregate;
     }
 
-    public void setSym(String sym) {
-        this.sym = sym;
+    public void setTradeAggregate(TradeAggregate tradeAggregate) {
+        this.tradeAggregate = tradeAggregate;
     }
 
-    public String getTrade() {
-        return trade;
+    public String getEvent() {
+        return event;
     }
 
-    public void setTrade(String trade) {
-        this.trade = trade;
+    public void setEvent(String event) {
+        this.event = event;
     }
 
-    public double getProduct() {
-        return product;
+    public String getSymbol() {
+        return symbol;
     }
 
-    public void setProduct(double product) {
-        this.product = product;
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
     }
 
-    public double getQuantity() {
-        return quantity;
+    public String getBar_num() {
+        return bar_num;
     }
 
-    public void setQuantity(double quantity) {
-        this.quantity = quantity;
-    }
-
-    public double getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(double timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public String getSide() {
-        return side;
-    }
-
-    public void setSide(String side) {
-        this.side = side;
-    }
-
-    public Timestamp getTimestamp2() {
-        return timestamp2;
-    }
-
-    public void setTimestamp2(Timestamp timestamp2) {
-        this.timestamp2 = timestamp2;
+    public void setBar_num(String bar_num) {
+        this.bar_num = bar_num;
     }
 
     @Override
     public String toString() {
         return "BarOHLC{" +
-                "sym='" + sym + '\'' +
-                ", trade='" + trade + '\'' +
-                ", product=" + product +
-                ", quantity=" + quantity +
-                ", timestamp=" + timestamp +
-                ", side='" + side + '\'' +
-                ", timestamp2=" + timestamp2 +
+                "tradeAggregate=" + tradeAggregate +
+                ", event='" + event + '\'' +
+                ", symbol='" + symbol + '\'' +
+                ", bar_num='" + bar_num + '\'' +
                 '}';
     }
-
 }

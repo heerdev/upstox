@@ -1,11 +1,14 @@
 package actors;
 
+
+import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
-import entity.BarOHLC;
+import entity.BarInput;
+
 
 import java.io.Serializable;
 
@@ -14,18 +17,26 @@ public class FSMWorker extends AbstractBehavior<FSMWorker.Command> {
 
     public static class Command implements Serializable{
         private static final long serialVersionUID = 1L;
-        private BarOHLC barOHLC;
+        private BarInput barInput;
+        private String message;
+        private ActorRef<OHLCController.Command> sender;
 
-        public Command(BarOHLC barOHLC) {
-            this.barOHLC = barOHLC;
+        public Command(BarInput barInput, String message, ActorRef<OHLCController.Command> sender) {
+            this.barInput = barInput;
+            this.message = message;
+            this.sender = sender;
         }
 
-        public BarOHLC getBarOHLC() {
-            return barOHLC;
+        public BarInput getBarInput() {
+            return barInput;
         }
 
-        public void setBarOHLC(BarOHLC barOHLC) {
-            this.barOHLC = barOHLC;
+        public String getMessage() {
+            return message;
+        }
+
+        public ActorRef<OHLCController.Command> getSender() {
+            return sender;
         }
     }
 
@@ -41,7 +52,7 @@ public class FSMWorker extends AbstractBehavior<FSMWorker.Command> {
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
                 .onAnyMessage(command->{
-                    System.out.println("FSM got " +command.getBarOHLC());
+                    System.out.println("FSM got " +command.getBarInput());
                  return this;
                 })
                 .build();
