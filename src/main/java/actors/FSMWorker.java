@@ -11,25 +11,39 @@ import entity.BarInput;
 
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FSMWorker extends AbstractBehavior<FSMWorker.Command> {
 
+    private List<BarInput> barInputs = new ArrayList<>();
 
-    public static class Command implements Serializable{
+    public interface  Command extends Serializable{}
+
+    public static class GetBarInput implements Command {
         private static final long serialVersionUID = 1L;
         private BarInput barInput;
-        private String message;
-        private ActorRef<OHLCController.Command> sender;
 
-        public Command(BarInput barInput, String message, ActorRef<OHLCController.Command> sender) {
+        public GetBarInput(BarInput barInput) {
             this.barInput = barInput;
-            this.message = message;
-            this.sender = sender;
         }
 
         public BarInput getBarInput() {
             return barInput;
         }
+    }
+    public static class GetBarDataCommand implements Command{
+        private static final long serialVersionUID = 1L;
+        private String message;
+        private ActorRef<OHLCController.Command> sender;
+
+        public GetBarDataCommand( String message, ActorRef<OHLCController.Command> sender) {
+
+            this.message = message;
+            this.sender = sender;
+        }
+
+
 
         public String getMessage() {
             return message;
@@ -51,10 +65,19 @@ public class FSMWorker extends AbstractBehavior<FSMWorker.Command> {
     @Override
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
-                .onAnyMessage(command->{
-                    System.out.println("FSM got " +command.getBarInput());
+                .onMessage(GetBarDataCommand.class,(command) ->{
+                    System.out.println("GET +++" + barInputs.toString());
+                    return this;
+                })
+                .onMessage(GetBarInput.class, (command)->{
+                    if(command.getBarInput()!=null) {
+                        barInputs = new ArrayList<>();
+                        barInputs.add(command.getBarInput());
+                        System.out.println("getting the barinput");
+                    }
                  return this;
                 })
+
                 .build();
     }
 }

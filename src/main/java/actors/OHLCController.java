@@ -11,8 +11,6 @@ import akka.actor.typed.javadsl.Receive;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.BarInput;
-import entity.BarOHLC;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -23,12 +21,14 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 public class OHLCController extends AbstractBehavior<OHLCController.Command> {
 
     private Object TIMER_KEY;
+
 
     public interface Command extends Serializable {}
 
@@ -81,13 +81,14 @@ public class OHLCController extends AbstractBehavior<OHLCController.Command> {
 
                     }
                     return Behaviors.withTimers(timer->{
-                            timer.startTimerWithFixedDelay(TIMER_KEY,new GenerateBarData(), Duration.ofSeconds(15));
-                        return this;
+                            timer.startTimerWithFixedDelay(TIMER_KEY,new GenerateBarData(), Duration.ofSeconds(3));
+                            return this;
                     });
                 })
                 .onMessage(GenerateBarData.class, message->{
                     for (ActorRef<FSMWorker.Command> commandActorRef:currentFSM.keySet()) {
-                        commandActorRef.tell(new FSMWorker.Command(null,"getBarData", getContext().getSelf()));
+                        System.out.println("GET THE BAR DATA");
+                        commandActorRef.tell(new FSMWorker.GetBarDataCommand("getBarData", getContext().getSelf()));
                     }
                     return this;
                 })
@@ -104,13 +105,9 @@ public class OHLCController extends AbstractBehavior<OHLCController.Command> {
             String line = reader.readLine();
 
             while (line != null) {
-
-
                 // convert JSON string to Map
                 BarInput barInput = mapper.readValue(line, BarInput.class);
-
-                fsmActor.tell(new FSMWorker.Command(barInput, "",getContext().getSelf()));
-
+                fsmActor.tell(new FSMWorker.GetBarInput(barInput));
 
                 line = reader.readLine();
             }
