@@ -1,6 +1,7 @@
 package actors;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
@@ -50,7 +51,7 @@ public class OHLCReader extends AbstractBehavior<OHLCReader.Command> {
                 .onMessage(ReadMessagesCommand.class , command -> {
                     if (command.getMessage().equals("start")) {
 
-                        ActorRef<FSMWorker.Command> fsmActor = getContext().spawn(FSMWorker.create(), "WORKER_FSM");
+                        ActorRef<OHLCController.Command> fsmActor = getContext().spawn(OHLCController.create(), "OHLCController");
                         readTradeDataAndSendToFSM(fsmActor);
 
 
@@ -61,11 +62,11 @@ public class OHLCReader extends AbstractBehavior<OHLCReader.Command> {
     }
 
 
-    private void readTradeDataAndSendToFSM( ActorRef<FSMWorker.Command> fsmActor ) throws URISyntaxException {
+    private void readTradeDataAndSendToFSM( ActorRef<OHLCController.Command> fsmActor ) throws URISyntaxException {
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         BufferedReader reader;
         try {
-            URL res = getClass().getClassLoader().getResource("trades.json");
+            URL res = getClass().getClassLoader().getResource("trade.json");
             File file = Paths.get(res.toURI()).toFile();
             reader = new BufferedReader(new FileReader(file));
             String line = reader.readLine();
@@ -74,7 +75,9 @@ public class OHLCReader extends AbstractBehavior<OHLCReader.Command> {
                 // convert JSON string to Map
                 BarInput barInput = mapper.readValue(line, BarInput.class);
 
-                fsmActor.tell(new FSMWorker.GetBarInput(barInput));
+
+                fsmActor.tell(new OHLCController.Instruction(barInput));
+
 
                 line = reader.readLine();
             }

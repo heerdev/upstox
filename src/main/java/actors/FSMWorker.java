@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class FSMWorker extends AbstractBehavior<FSMWorker.Command> {
 
-    private static List<BarInput> barInputs = Collections.synchronizedList(new ArrayList<>());
+    private  static List<BarInput> barInputs = new ArrayList<>();
     private static AtomicInteger bar_num= new AtomicInteger(1);
 
 
@@ -31,7 +32,7 @@ public class FSMWorker extends AbstractBehavior<FSMWorker.Command> {
 
     public static class GetBarInput implements Command {
         private static final long serialVersionUID = 1L;
-        private BarInput barInput;
+        private BarInput barInput ;
 
         public GetBarInput(BarInput barInput) {
             this.barInput = barInput;
@@ -44,22 +45,40 @@ public class FSMWorker extends AbstractBehavior<FSMWorker.Command> {
         }
     }
 
-
-
-    public static class GetBarDataCommand implements Command{
+    public static class StartCommand implements Command {
         private static final long serialVersionUID = 1L;
         private String message;
         private ActorRef<OHLCController.Command> sender;
 
-        public GetBarDataCommand( String message, ActorRef<OHLCController.Command> sender) {
+        public StartCommand(String message, ActorRef<OHLCController.Command> sender) {
             this.message = message;
             this.sender = sender;
         }
 
-
-
         public String getMessage() {
             return message;
+        }
+
+        public ActorRef<OHLCController.Command> getSender() {
+            return sender;
+        }
+    }
+
+
+
+    public static class GetBarDataCommand implements Command{
+        private static final long serialVersionUID = 1L;
+        private static List<BarInput> barInputs = new ArrayList<>();
+
+        private ActorRef<OHLCController.Command> sender;
+
+        public GetBarDataCommand(List<BarInput> barInputs, ActorRef<OHLCController.Command> sender) {
+            this.barInputs = barInputs;
+            this.sender = sender;
+        }
+
+        public List<BarInput> getBarInputs() {
+            return barInputs;
         }
 
         public ActorRef<OHLCController.Command> getSender() {
@@ -78,24 +97,26 @@ public class FSMWorker extends AbstractBehavior<FSMWorker.Command> {
     @Override
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
-                .onMessage(GetBarInput.class,message ->{
-                    barInputs.add(message.getBarInput());
-                    return this;
-                })
+
                 .onMessage(GetBarDataCommand.class, message->{
 
-                    Map<String, List<BarInput>> maplist  =  barInputs.stream()
+                    Map<String, List<BarInput>> maplist  =  message.getBarInputs().stream()
                                                     .collect(Collectors.groupingBy(BarInput::getSym, Collectors.toList()));
                     List<BarOHLC> barOHLCS = new ArrayList<>();
                     List<Double> tradevalue = new ArrayList<>();;
                     List<Double> tradeQuanity = new ArrayList<>();
+                    List<BarInput>  bar = new ArrayList<>();
                     for (Map.Entry<String, List<BarInput>> entry: maplist.entrySet()) {
 
                         for (BarInput barInput: entry.getValue()) {
                             tradevalue.add(barInput.getProduct());
                             tradeQuanity.add(barInput.getQuantity());
+                            bar.add(barInput);
+
                         }
                         BarOHLC barOHLC = new BarOHLC();
+                        Comparator<BarInput> comparator=Comparator.comparing(BarInput::getTimestamp2);
+                        barOHLC.setOpen(entry.getValue().stream().sorted(comparator).collect(Collectors.toList()).get(0).getProduct());
 
                         barOHLC.setClose(0);
                         barOHLC.setHigh(Collections.max(tradevalue));
@@ -111,7 +132,7 @@ public class FSMWorker extends AbstractBehavior<FSMWorker.Command> {
 
                     }
                     bar_num.incrementAndGet();
-                    System.out.println("DEKHTE HAIN  " + barOHLCS.toString());
+                    System.out.println(barOHLCS.toString());
                     return this;
                 })
                 .build();
