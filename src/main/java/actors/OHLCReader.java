@@ -73,7 +73,6 @@ public class OHLCReader extends AbstractBehavior<OHLCReader.Command> {
             while (line != null) {
                 // convert JSON string to Map
                 BarInput barInput = mapper.readValue(line, BarInput.class);
-                System.out.println("SEND MESSAGE " +line);
 
                 fsmActor.tell(new FSMWorker.GetBarInput(barInput));
 

@@ -1,20 +1,63 @@
 package entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BarOHLC {
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private TradeAggregate tradeAggregate;
+
+
+    @JsonProperty("o")
+    private double open;
+    @JsonProperty("h")
+    private double high;
+    @JsonProperty("l")
+    private double low;
+    @JsonProperty("c")
+    private double close;
+
+    private double volume;
     private String event;
     private String symbol;
     private int bar_num;
 
-    public TradeAggregate getTradeAggregate() {
-        return tradeAggregate;
+    public double getOpen() {
+        return open;
     }
 
-    public void setTradeAggregate(TradeAggregate tradeAggregate) {
-        this.tradeAggregate = tradeAggregate;
+    public void setOpen(double open) {
+        this.open = open;
+    }
+
+    public double getHigh() {
+        return high;
+    }
+
+    public void setHigh(double high) {
+        this.high = high;
+    }
+
+    public double getLow() {
+        return low;
+    }
+
+    public void setLow(double low) {
+        this.low = low;
+    }
+
+    public double getClose() {
+        return close;
+    }
+
+    public void setClose(double close) {
+        this.close = close;
+    }
+
+    public double getVolume() {
+        return volume;
+    }
+
+    public void setVolume(double volume) {
+        this.volume = volume;
     }
 
     public String getEvent() {
@@ -44,10 +87,14 @@ public class BarOHLC {
     @Override
     public String toString() {
         return "BarOHLC{" +
-                "tradeAggregate=" + tradeAggregate +
+                "open=" + open +
+                ", high=" + high +
+                ", low=" + low +
+                ", close=" + close +
+                ", volume=" + volume +
                 ", event='" + event + '\'' +
                 ", symbol='" + symbol + '\'' +
-                ", bar_num='" + bar_num + '\'' +
+                ", bar_num=" + bar_num +
                 '}';
     }
 }

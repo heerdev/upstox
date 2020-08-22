@@ -21,7 +21,6 @@ public class BarInput {
     @JsonProperty("TS2")
     private Timestamp timestamp2;
 
-
     public String getSym() {
         return sym;
     }

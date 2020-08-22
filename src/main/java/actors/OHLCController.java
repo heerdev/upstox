@@ -59,7 +59,7 @@ public class OHLCController extends AbstractBehavior<OHLCController.Command> {
                .onMessage(Instruction.class, message->{
 
                    return Behaviors.withTimers(timers->{
-                       timers.startTimerAtFixedRate(TIMER_KEY, new GenerateBarData(), Duration.ofMillis(10));
+                       timers.startTimerAtFixedRate(TIMER_KEY, new GenerateBarData(), Duration.ofSeconds(15));
 
                        return this;
 
