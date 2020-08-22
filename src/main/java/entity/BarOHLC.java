@@ -1,10 +1,13 @@
 package entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class BarOHLC {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private TradeAggregate tradeAggregate;
     private String event;
     private String symbol;
-    private String bar_num;
+    private int bar_num;
 
     public TradeAggregate getTradeAggregate() {
         return tradeAggregate;
@@ -30,11 +33,11 @@ public class BarOHLC {
         this.symbol = symbol;
     }
 
-    public String getBar_num() {
+    public int getBar_num() {
         return bar_num;
     }
 
-    public void setBar_num(String bar_num) {
+    public void setBar_num(int bar_num) {
         this.bar_num = bar_num;
     }
 
