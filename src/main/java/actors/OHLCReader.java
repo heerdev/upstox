@@ -1,7 +1,6 @@
 package actors;
 
 import akka.actor.typed.ActorRef;
-import akka.actor.typed.ActorSystem;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
@@ -19,7 +18,7 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.time.Duration;
+
 
 public class OHLCReader extends AbstractBehavior<OHLCReader.Command> {
     private Object TIMER_KEY;
